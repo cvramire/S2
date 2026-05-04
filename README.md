@@ -32,7 +32,11 @@
     <ul>
       <li><a href="#eda">1. Análisis exploratorio de datos</a></li>
       <li><a href="#preprocesamiento">2. Preprocesamiento</a></li>
-      <li><a href="#modelado">3. Modelado</a></li>
+      <li><a href="#modelado">3. Modelado</a>
+        <ul>
+          <li><a href="#ajuste-parametro-c-svm">Ajuste del parámetro C en SVM</a></li>
+        </ul>
+      </li>
       <li><a href="#evaluacion-experimental">4. Evaluación experimental</a></li>
     </ul>
   </li>
@@ -202,6 +206,37 @@ Se generaron las siguientes visualizaciones:
 | SVM RBF | Captura relaciones no lineales entre sensores |
 | Random Forest | Reduce varianza y permite importancia de variables |
 
+
+<h4 id="ajuste-parametro-c-svm">Ajuste del parámetro C en SVM</h4>
+
+El modelo SVM con kernel RBF requiere ajustar el hiperparámetro <b>C</b>, el cual controla el equilibrio entre el margen de separación y los errores de clasificación. Debido al fuerte desbalance de clases del dataset, el criterio de selección utilizado fue el <b>F1-score</b>, ya que permite equilibrar Precision y Recall.
+
+<table>
+  <tr>
+    <th>C</th>
+    <th>Interpretación</th>
+    <th>Riesgo</th>
+  </tr>
+  <tr>
+    <td>0.1</td>
+    <td>Margen amplio, mayor tolerancia a errores</td>
+    <td>Underfitting</td>
+  </tr>
+  <tr>
+    <td>1.0</td>
+    <td>Balance estándar entre margen y errores</td>
+    <td>Valor de referencia</td>
+  </tr>
+  <tr>
+    <td>10.0</td>
+    <td>Margen más estrecho, mayor ajuste a los datos</td>
+    <td>Posible overfitting</td>
+  </tr>
+</table>
+
+Se evaluaron los valores <b>C = 0.1</b>, <b>C = 1.0</b> y <b>C = 10.0</b>. El mejor resultado se obtuvo con <b>C = 0.1</b>, alcanzando un <b>F1-score de 0.0757</b> y un <b>Recall de 0.5075</b>. Este resultado es relevante en mantenimiento predictivo porque permite detectar más fallos reales, reduciendo el riesgo de falsos negativos en un entorno industrial.
+
+
 <h4>Modelos de regresión</h4>
 
 | Modelo | Justificación |
@@ -287,11 +322,11 @@ target_reg = 'Tool wear [min]'
 
 <h3 id="resultados-de-clasificacion">Resultados de clasificación</h3>
 
-|                   |   Accuracy |   Precision |   Recall |     F1 |    AUC |
-|:------------------|-----------:|------------:|---------:|-------:|-------:|
-| Árbol de Decisión |     0.8885 |      0.0244 |   0.0597 | 0.0346 | 0.5018 |
-| SVM RBF           |     0.585  |      0.0409 |   0.5075 | 0.0757 | 0.4415 |
-| Random Forest     |     0.9555 |      0.0769 |   0.0299 | 0.043  | 0.5273 |
+| Modelo | Accuracy | Precision | Recall | F1 | AUC | Hiperparámetro destacado |
+|:--|--:|--:|--:|--:|--:|:--|
+| Árbol de Decisión | 0.8885 | 0.0244 | 0.0597 | 0.0346 | 0.5018 | max_depth=8 |
+| SVM RBF | 0.5850 | 0.0409 | 0.5075 | **0.0757** | 0.4415 | **C=0.1** |
+| Random Forest | 0.9555 | 0.0769 | 0.0299 | 0.0430 | 0.5273 | n_estimators=200 |
 
 **Mejor F1-score:** SVM RBF  
 **Mejor Recall:** SVM RBF  
@@ -380,6 +415,9 @@ Se revisó la diferencia entre desempeño en entrenamiento y prueba. En el caso 
 El proyecto evidencia que el mantenimiento predictivo con sensores IoT es un problema técnicamente desafiante cuando la clase de fallo es minoritaria. Los valores bajos de F1-score no deben interpretarse como un error del proceso, sino como una consecuencia del desbalance y de la baja separación entre clases.
 
 Para el problema de clasificación, el modelo recomendado es **SVM con kernel RBF**, ya que prioriza la detección de fallos reales. En un entorno industrial, detectar más fallos puede ser más importante que mantener una accuracy alta, debido al costo operativo de una parada no planificada.
+
+El ajuste del parámetro <b>C</b> en el modelo SVM fue determinante para seleccionar la configuración con mejor equilibrio entre Precision y Recall. En este caso, <b>C=0.1</b> permitió obtener el mejor F1-score y reforzó la capacidad del modelo para detectar fallos reales.
+
 
 Para el problema de regresión, los resultados sugieren que las variables actuales no son suficientes para predecir con precisión el desgaste acumulado. Sería necesario incorporar variables históricas, ventanas temporales o información del ciclo de uso de la máquina.
 
